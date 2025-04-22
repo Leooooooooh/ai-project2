@@ -1,0 +1,4 @@
+gymnasium==0.29.1
+torch>=2.0
+opencv-python
+matplotlib
