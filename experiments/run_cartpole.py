@@ -5,6 +5,7 @@ import numpy as np
 from agents.dqn import DQNAgent
 from agents.policy_gradient import PGAgent
 import matplotlib.pyplot as plt
+from videos.video import record_video 
 import torch
 
 def train_dqn():
@@ -44,6 +45,7 @@ def train_dqn():
 
     env.close()
     agent.save("cartpole_dqn.pth")
+    record_video("CartPole-v1", agent, video_name="cartpole_dqn_demo")
 
     plt.plot(rewards)
     plt.title("DQN CartPole Rewards")
@@ -85,6 +87,7 @@ def train_pg():
 
     env.close()
     agent.save("cartpole_pg.pth")
+    record_video("CartPole-v1", agent, video_name="cartpole_pg_demo")
 
     plt.plot(rewards)
     plt.title("Policy Gradient CartPole Rewards")
@@ -98,14 +101,21 @@ def rule_based():
     episodes = 10
     best_reward = 0
     rewards = []
+    actions = []
+
+    class RuleBasedAgent:
+        def select_action(self, state):
+            pole_angle = state[2]
+            return 1 if pole_angle > 0 else 0
+
+    agent = RuleBasedAgent()
 
     for ep in range(episodes):
         state, _ = env.reset()
         total_reward = 0
 
         for t in range(1000):
-            pole_angle = state[2]  # index 2 is the pole angle
-            action = 1 if pole_angle > 0 else 0
+            action = agent.select_action(state)
             state, reward, terminated, truncated, _ = env.step(action)
             total_reward += reward
             if terminated or truncated:
@@ -118,6 +128,7 @@ def rule_based():
         print(f"[RuleBased] Episode {ep} - Reward: {total_reward:.2f} - Best: {best_reward:.2f}")
 
     env.close()
+    record_video("CartPole-v1", agent, video_name="cartpole_rulebased_demo")
 
     plt.plot(rewards)
     plt.title("Rule-Based CartPole Rewards")

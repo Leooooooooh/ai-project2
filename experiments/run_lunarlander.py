@@ -3,8 +3,9 @@
 import gymnasium as gym
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 from agents.dqn import DQNAgent
-
+from videos.video import record_video  # make sure this import matches your directory
 
 def train_lunarlander():
     env = gym.make("LunarLander-v3")
@@ -37,19 +38,24 @@ def train_lunarlander():
         rewards.append(total_reward)
         if total_reward > best_reward:
             best_reward = total_reward
+            torch.save(agent.model.state_dict(), "lunarlander_dqn_best.pth")
 
         print(f"[LUNAR] Episode {ep} - Reward: {total_reward:.2f} - Best: {best_reward:.2f} - Epsilon: {agent.epsilon:.2f}")
 
     env.close()
     agent.save("lunarlander_dqn.pth")
 
+    # Load best model and record video
+    agent.model.load_state_dict(torch.load("lunarlander_dqn_best.pth"))
+    record_video("LunarLander-v3", agent, video_name="lunarlander_dqn_best")
+
+    # Plot performance
     plt.plot(rewards)
     plt.title("DQN LunarLander Rewards")
     plt.xlabel("Episode")
     plt.ylabel("Reward")
     plt.grid(True)
     plt.show()
-
 
 if __name__ == "__main__":
     train_lunarlander()
